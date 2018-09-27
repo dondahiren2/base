@@ -1,0 +1,14 @@
+body { font-family: Helvetica, sans-serif; }
+h2, h3 { margin-top:0; }
+form { margin-top: 15px; }
+form > input { margin-right: 15px; }
+#results { float:right; margin:20px; padding:20px; border:1px solid; background:#ccc; }
+#results1 { float:right; margin:20px; padding:20px; border:1px solid; background:#ccc; }
+#results2 { float:right; margin:20px; padding:20px; border:1px solid; background:#ccc; }
+#results3 { float:right; margin:20px; padding:20px; border:1px solid; background:#ccc; }
+#results4 { float:right; margin:20px; padding:20px; border:1px solid; background:#ccc; }
+#results5 { float:right; margin:20px; padding:20px; border:1px solid; background:#ccc; }
+#results6 { float:right; margin:20px; padding:20px; border:1px solid; background:#ccc; }
+#results7 { float:right; margin:20px; padding:20px; border:1px solid; background:#ccc; }
+#results8 { float:right; margin:20px; padding:20px; border:1px solid; background:#ccc; }
+#results9 { float:right; margin:20px; padding:20px; border:1px solid; background:#ccc; }
