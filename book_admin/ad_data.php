@@ -422,9 +422,179 @@ include("../config.php");
 			admin_events_list();
 		}else if($call == "insert_navigation_color"){
 			insert_navigation_color();
+		}else if($call == "contact_us_list"){
+			contact_us_list();
+		}else if($call == "delete_contact_us"){
+			delete_contact_us();
 		}
 	}
 
+
+function delete_contact_us(){
+    global $con, $per_page, $cdn_path;
+    $id = $_POST['id']; 
+	$bp_tal_id = isset($_SESSION['bp_tal_id']) ? $_SESSION['bp_tal_id'] : ''; 
+	if($bp_tal_id){
+		mysqli_set_charset($con, 'utf8');
+		$spre = $con->query("delete from micro_contact where mc_id = '$id' and mc_tal_id = '$bp_tal_id' ");
+		$msg = 0;
+		if($spre == 1){
+			$msg = 1;
+		} else {
+			$msg = 0;
+		}
+	}else {
+		$msg = 0;
+	}
+	echo $msg;
+	mysqli_close($con); 
+}
+	
+	
+function contact_us_list(){
+    global $con, $per_page, $cdn_path;
+    $page = $_POST['page'];
+    $cur_page = $page;
+    
+    $page -= 1; 
+    $previous_btn = true;
+    $next_btn = true;
+    $first_btn = true;
+    $last_btn = true;
+    $start = $page * $per_page; 
+    if($page == 0){
+        $cur_pagea = ($page + 1);
+    } else {
+        $cur_pagea = ($page * $per_page) + 1;
+    }
+    
+    $ord_sort = $_POST['ord_sort'];
+	$fields = $_POST['fields'];
+    $ma_title = $_POST['mn_title'];  
+    $mn_email = $_POST['mn_email'];  
+   
+	
+    $veer = "";
+    
+	$bp_tal_id = isset($_SESSION['bp_tal_id']) ? $_SESSION['bp_tal_id'] : ''; 
+	 
+	$veer .= "bp.bp_tal_id = '$bp_tal_id' and ";
+    
+    if($ma_title == ""){
+        $veer .= "";   
+    } else {
+        $veer .= " mc_name like '%$ma_title%' and ";
+    }
+	
+    if($mn_email == ""){
+        $veer .= "";   
+    } else {
+        $veer .= " mc_email like '%$mn_email%' and ";
+    }
+	
+ 
+	 
+	if($fields == "" || $ord_sort == ""){
+        $orderby = " mc_id desc ";   
+    } else {
+        $orderby = $fields." ".$ord_sort;
+    }
+    
+    $dev = substr($veer,0,-4);
+    if($veer == ""){
+        $veer1 = " order by ".$orderby;
+    } else {
+        $veer1 = " where ".$dev." order by ".$orderby;
+    }
+
+    mysqli_set_charset($con, 'utf8');
+    $spre = $con->query("select mc_id, mc_name, mc_email, mc_msg, mc_date from micro_contact as m join basic_profile as bp on m.mc_tal_id = bp.bp_tal_id $veer1 LIMIT $start, $per_page");
+    $msg = "";
+    if(mysqli_num_rows($spre) > 0){
+        while($r = mysqli_fetch_array($spre)){
+			 
+            $msg .= '<tr>'; 
+            $msg .= '<td>'.$cur_pagea++.'</td>';    
+            $msg .= '<td>'.date('d-m-Y', strtotime($r["mc_date"])).'</td>'; 
+            $msg .= '<td>'.$r["mc_name"].'</td>'; 
+            $msg .= '<td>'.$r["mc_email"].'</td>'; 
+            $msg .= '<td>'.nl2br($r["mc_msg"]).'</td>'; 
+            $msg .= '<td><i onclick="deletebtn(';
+            $msg .= "'".$r["mc_id"]."'";
+            $msg .=')" class="fa fa-trash-o" aria-hidden="true" title="DELETE" style="font-size: 15px; text-align: left; cursor: pointer; margin-left: 5px;"></i></td>';
+            $msg .= '</tr>';
+		}
+    } else {
+        $msg .= '<tr>'; 
+        $msg .= '<td colspan="6">No Data Found.</td>';
+        $msg .= '</tr>';
+    }       
+	mysqli_set_charset($con, 'utf8');
+	$query_pag_num = "SELECT COUNT(*) AS count FROM micro_contact as m join basic_profile as bp on m.mc_tal_id = bp.bp_tal_id $veer1";
+	$result_pag_num = $con->query($query_pag_num);
+	$row = mysqli_fetch_array($result_pag_num);
+	$count = $row['count'];
+	$no_of_paginations = ceil($count / $per_page);
+
+	if($cur_page >= 7) {
+		$start_loop = $cur_page - 3;
+		if ($no_of_paginations > $cur_page + 3)
+			$end_loop = $cur_page + 3;
+		else if ($cur_page <= $no_of_paginations && $cur_page > $no_of_paginations - 6) {
+			$start_loop = $no_of_paginations - 6;
+			$end_loop = $no_of_paginations;
+		} else {
+			$end_loop = $no_of_paginations;
+		}
+	} else {
+		$start_loop = 1;
+		if ($no_of_paginations > 7)
+			$end_loop = 7;
+		else
+			$end_loop = $no_of_paginations;
+	}
+
+	$msg .= "pagination_part<div class='pagination'><ul>"; 
+	// FOR ENABLING THE FIRST BUTTON
+	if ($first_btn && $cur_page > 1) {
+		$msg .= "<li p='1' class='active'>First</li>";
+	} else if ($first_btn) {
+		$msg .= "<li p='1' class='inactive'>First</li>";
+	} 
+	// FOR ENABLING THE PREVIOUS BUTTON
+	if ($previous_btn && $cur_page > 1) {
+		$pre = $cur_page - 1;
+		$msg .= "<li p='$pre' class='active'>Previous</li>";
+	} else if ($previous_btn) {
+		$msg .= "<li class='inactive'>Previous</li>";
+	}
+	for ($i = $start_loop; $i <= $end_loop; $i++) { 
+		if ($cur_page == $i){
+			$msg .= "<li p='$i' style='color:#fff;background-color:#006699;' class='active'>{$i}</li>";
+		} else {
+			$msg .= "<li p='$i' class='active'>{$i}</li>";
+		}   
+	} 
+	// TO ENABLE THE NEXT BUTTON
+	if ($next_btn && $cur_page < $no_of_paginations) {
+		$nex = $cur_page + 1;
+		$msg .= "<li p='$nex' class='active'>Next</li>";
+	} else if ($next_btn) {
+		$msg .= "<li class='inactive'>Next</li>";
+	} 
+	// TO ENABLE THE END BUTTON
+	if ($last_btn && $cur_page < $no_of_paginations) {
+		$msg .= "<li p='$no_of_paginations' class='active'>Last</li>";
+	} else if ($last_btn) {
+		$msg .= "<li p='$no_of_paginations' class='inactive'>Last</li>";
+	}
+	 
+	$msg .= "</ul></div>pagination_part".$count; 
+		
+	echo $msg;
+	mysqli_close($con); 
+}
+	
 function insert_navigation_color(){
 	global $con;
 	$mh_nav_back_color = mysqli_escape_string($con,$_POST['mh_nav_back_color']);
@@ -4746,7 +4916,8 @@ function delete_events(){
 	echo $msg;
 	mysqli_close($con); 
 }
-	
+		
+
 function live_about_list(){
     global $con, $per_page, $cdn_path;
     $page = $_POST['page'];
@@ -7323,10 +7494,11 @@ function schl_nm(){
 	global $con;
 	
 	$msg = '';
-	$vol_nm = $con->query("select schl_nm,schl_id from school_register order by schl_nm asc");
+	$vol_nm = $con->query("select bp_id,bp_crop_name from basic_profile where bp_sub_user_type = 'SCL' order by bp_crop_name asc");
 	$msg .='<option value="">School Name</otion>';
 	while($row = mysqli_fetch_array($vol_nm)){
-		$msg .= '<option value="'.$row['schl_id'].'" id="schl_id">'.$row['schl_nm'].'</option>';
+		//$msg .= '<option value="'.$row['schl_id'].'" id="schl_id">'.$row['schl_nm'].'</option>';
+		$msg .= '<option value="'.$row['bp_id'].'" id="schl_id">'.$row['bp_crop_name'].'</option>';
 	}
 	echo $msg;
 }
@@ -7335,11 +7507,12 @@ function ngo_nm(){
 	global $con;
 	
 	$msg = '';
-	$ngo_nm = $con->query("select ngo_id,ngo_name from ngo_register order by ngo_name asc");
+	$ngo_nm = $con->query("select bp_id,bp_crop_name from basic_profile where bp_sub_user_type = 'NGO' order by bp_crop_name asc");
 		$msg .='<option value="">NGO Name</otion>';
 	while($row = mysqli_fetch_array($ngo_nm)){
 	
-		$msg .= '<option value="'.$row['ngo_id'].'" id="ngo_id">'.$row['ngo_name'].'</option>';
+		//$msg .= '<option value="'.$row['bp_crop_name'].'" id="ngo_id">'.$row['bp_crop_name'].'</option>';
+		$msg .= '<option value="'.$row['bp_id'].'" id="ngo_id">'.$row['bp_crop_name'].'</option>';
 	}
 	echo $msg;
 }
@@ -7348,15 +7521,14 @@ function vol_nm(){
 	global $con;
 	
 	$msg = '';
-	$vol_nm = $con->query("select vol_fnm,vol_lnm,vol_id from volunteer_register order by vol_fnm asc");
+	$vol_nm = $con->query("select bp_fname,bp_lname,bp_id from  basic_profile where bp_sub_user_type = 'VOL' order by bp_fname asc");
 	$msg .='<option value="">Volunteer Name</otion>';
 	while($row = mysqli_fetch_array($vol_nm)){
-		$name = $row['vol_fnm'] .' '. $row['vol_lnm'];
-		$msg .= '<option value="'.$row['vol_id'].'" id="vol_id">'.$name.'</option>';
+		$name = $row['bp_fname'] .' '. $row['bp_lname'];
+		$msg .= '<option value="'.$row['bp_id'].'" id="vol_id">'.$name.'</option>';
 	}
 	echo $msg;
 }
-
 function vol_nm1(){   
 	global $con;
 	
@@ -7374,10 +7546,11 @@ function stud_nm(){
 	global $con;
 	
 	$msg = '';
-	$vol_nm = $con->query("select stud_id,stud_fnm,stud_lnm from student_register order by stud_fnm asc");
+	$vol_nm = $con->query("select bp_fname,bp_lname,bp_id fro  basic_profile where bp_sub_user_type = 'TAL' order by bp_fname asc");
 	$msg .='<option value="">Student Name</otion>';
 	while($row = mysqli_fetch_array($vol_nm)){
-		$msg .= '<option value="'.$row['stud_fnm'].' '.$row['stud_lnm'].'" id="stud_id"></option>';
+		$name = $row['bp_fname'] .' '. $row['bp_lname'];
+		$msg .= '<option value="'.$row['bp_id'].'" id="stud_id">'.$name.'</option>';
 	}
 	echo $msg;
 }
@@ -9168,7 +9341,7 @@ function volun_list(){
    if($ngnm == ""){
         $veer .= "";
     } else {
-        $veer .= " bp_crop_name like '%$ngnm%' and ";
+        $veer .= " biv_ngo_id = '$ngnm' and ";
     }
     
     if($mno == ""){
@@ -9240,7 +9413,7 @@ function volun_list(){
         $msg .= '</tr>';
     }       
             mysqli_set_charset($con, 'utf8');
-            $query_pag_num = "SELECT COUNT(*) AS count FROM basic_profile $veer1";
+            $query_pag_num = "SELECT COUNT(*) AS count from basic_profile as bp join basic_other_info_volunteer as biv on bp.bp_unique_id = biv.biv_bp_unique_id $veer1 ";
             $result_pag_num = $con->query($query_pag_num);
             $row = mysqli_fetch_array($result_pag_num);
             $count = $row['count'];
@@ -9333,7 +9506,7 @@ function ngo_list(){
    if($ngnm == ""){
         $veer .= "";
     } else {
-        $veer .= " bp_crop_name like '%$ngnm%' and ";
+        $veer .= " bp_id = '$ngnm' and ";
     }
     
     if($mno == ""){
@@ -9405,7 +9578,7 @@ function ngo_list(){
     }
 	
 	mysqli_set_charset($con, 'utf8');
-	$query_pag_num = "SELECT COUNT(*) AS count FROM basic_profile $veer1";
+	$query_pag_num = "SELECT COUNT(*) AS count from basic_profile $veer1";
 	$result_pag_num = $con->query($query_pag_num);
 	$row = mysqli_fetch_array($result_pag_num);
 	$count = $row['count'];
@@ -9510,8 +9683,37 @@ function school_list(){
     $fields = $_POST['fields'];
     $veer = "";
 	
+    if($ngnm == ""){
+        $veer .= "";
+    } else {
+        $veer .= " bis_ngo_id = '$ngnm' and ";
+    }
+
+	if($vl_nm == ""){
+        $veer .= "";
+    } else {
+        $veer .= " bis_vol_id = '$vl_nm' and ";
+    }
+
+	if($sclnm == ""){
+        $veer .= "";
+    } else {
+        $veer .= " bp_id = '$sclnm' and ";
+    }
+     if($fields == "" || $ord_sort == ""){
+        $orderby = " bp_create_date desc ";   
+    } else {
+        $orderby = $fields." ".$ord_sort;
+    }
+    $dev = substr($veer,0,-4);
+    if($veer == ""){
+        $veer1 = " where bp_user_type = 12 and bp_sub_user_type = 'SCL' order by ".$orderby;
+    } else {
+        $veer1 = " where bp_user_type = 12 and bp_sub_user_type = 'SCL' and ".$dev." order by ".$orderby;
+    }
+
     mysqli_set_charset($con, 'utf8');
-    $spre = $con->query("select bp_id, bp_tal_id, bp_crop_name, bp_crop_mobile_no, bp_crop_email, bp_tal_pass, bp_create_date, bp_status, bis_total_student, (SELECT bp_crop_name FROM basic_profile where bp_id = bis.bis_ngo_id) as ngo_name, (SELECT CONCAT(bp_fname, bp_lname) FROM basic_profile where bp_id = bis.bis_vol_id) as vol_name from basic_profile as bp left join basic_other_info_school as bis ON bp.bp_unique_id = bis.bis_bp_unique_id where bp_user_type = 12 and bp_sub_user_type = 'SCL' LIMIT $start, $per_page ");
+    $spre = $con->query("select bp_id, bp_tal_id, bp_crop_name, bp_crop_mobile_no, bp_crop_email, bp_tal_pass, bp_create_date, bp_status, bis_total_student, (SELECT bp_crop_name FROM basic_profile where bp_id = bis.bis_ngo_id) as ngo_name, (SELECT CONCAT(bp_fname, bp_lname) FROM basic_profile where bp_id = bis.bis_vol_id) as vol_name from basic_profile as bp left join basic_other_info_school as bis ON bp.bp_unique_id = bis.bis_bp_unique_id $veer1 LIMIT $start, $per_page ");
 
     $msg = "";
 	$no = 1;
@@ -9553,7 +9755,7 @@ function school_list(){
         $msg .= '</tr>';
     }       
 	mysqli_set_charset($con, 'utf8');
-	$query_pag_num = "SELECT COUNT(*) AS count FROM basic_profile where bp_user_type = 12 ";
+	$query_pag_num = "SELECT COUNT(*) AS count from basic_profile as bp left join basic_other_info_school as bis ON bp.bp_unique_id = bis.bis_bp_unique_id $veer1 ";
 	$result_pag_num = $con->query($query_pag_num);
 	$row = mysqli_fetch_array($result_pag_num);
 	$count = $row['count'];
@@ -9643,9 +9845,42 @@ function student_list(){
     $ord_sort = $_POST['ord_sort'];
     $fields = $_POST['fields'];
     $veer = "";
-	
+	if($ng_nm == ""){
+        $veer .= "";
+    } else {
+        $veer .= " bos_ngo_id = '$ng_nm' and ";
+    }
+
+	if($vl_nm == ""){
+        $veer .= "";
+    } else {
+        $veer .= " bos_vol_id = '$vl_nm' and ";
+    }
+
+	if($sclnm == ""){
+        $veer .= "";
+    } else {
+        $veer .= " bos_scl_id = '$sclnm' and ";
+    }
+
+   /* if($sclnm == ""){
+        $veer .= "";
+    } else {
+        $veer .= " bp_id = '$sclnm' and ";
+    }*/
+     if($fields == "" || $ord_sort == ""){
+        $orderby = " bp_create_date desc ";   
+    } else {
+        $orderby = $fields." ".$ord_sort;
+    }
+    $dev = substr($veer,0,-4);
+    if($veer == ""){
+        $veer1 = " where bp_user_type = 13 and bp_sub_user_type = 'TAL' order by ".$orderby;
+    } else {
+        $veer1 = " where bp_user_type = 13 and bp_sub_user_type = 'TAL' and ".$dev." order by ".$orderby;
+    }
     mysqli_set_charset($con, 'utf8');
-    $spre = $con->query("select bp_id, bp_tal_id, bp_fname, bp_mname, bp_lname, bp_mobile_no, bp_email, bp_tal_pass, bp_create_date, bp_status, (SELECT bp_crop_name FROM basic_profile where bp_id = bos.bos_scl_id) as scl_name, (SELECT bp_crop_name FROM basic_profile where bp_id = bos.bos_ngo_id) as ngo_name, (SELECT CONCAT(bp_fname, bp_lname) FROM basic_profile where bp_id = bos.bos_vol_id) as vol_name from basic_profile as bp left join basic_other_student as bos ON bp.bp_unique_id = bos.bos_bp_unique_id where bp_user_type = 13 LIMIT $start, $per_page ");
+    $spre = $con->query("select bp_id, bp_tal_id, bp_fname, bp_mname, bp_lname, bp_mobile_no, bp_email, bp_tal_pass, bp_create_date, bp_status, (SELECT bp_crop_name FROM basic_profile where bp_id = bos.bos_scl_id) as scl_name, (SELECT bp_crop_name FROM basic_profile where bp_id = bos.bos_ngo_id) as ngo_name, (SELECT CONCAT(bp_fname, bp_lname) FROM basic_profile where bp_id = bos.bos_vol_id) as vol_name from basic_profile as bp left join basic_other_student as bos ON bp.bp_unique_id = bos.bos_bp_unique_id $veer1 LIMIT $start, $per_page ");
 
     $msg = "";
 	$no = 1;
@@ -9686,7 +9921,8 @@ function student_list(){
         $msg .= '</tr>';
     }       
 	mysqli_set_charset($con, 'utf8');
-	$query_pag_num = "SELECT COUNT(*) AS count FROM basic_profile where bp_user_type = 13 ";
+	$query_pag_num = "SELECT COUNT(*) AS count from basic_profile as bp left join basic_other_student as bos ON bp.bp_unique_id = bos.bos_bp_unique_id $veer1";
+	
 	$result_pag_num = $con->query($query_pag_num);
 	$row = mysqli_fetch_array($result_pag_num);
 	$count = $row['count'];

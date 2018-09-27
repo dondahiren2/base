@@ -138,6 +138,16 @@ $(document).ready(function() {
 	 
 });
 
+	ngo_name();
+function ngo_name(){
+	$.ajax({
+		type:"post",
+		url:"<?php echo $admin_url?>ad_data.php?call=ngo_nm",
+		success:function(msg){
+			$("#ng_nm").html(msg);
+		}
+	});
+}
 	loadData(page,fields,ord_sort);
 	function loadData(page,fields,ord_sort){
 		var ngnm = document.getElementById("ng_nm").value;

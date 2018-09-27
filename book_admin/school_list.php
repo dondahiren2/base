@@ -33,7 +33,7 @@
 							<select class="form-control saerchbtn" id="sclnm" name="sclnm"></select>
 						</div>
 						<div class="col-md-2">
-							<select class="form-control saerchbtn" id="ng_nm" name="ng_nm"></select>
+							<select class="form-control saerchbtn" id="ng_nm" name="ng_nm" ></select>
 						</div>
 						<div class="col-md-2">
 							<datalist class="form-control" id="emailid" name="emailid" style="display:none;">
@@ -41,7 +41,7 @@
 							<input type="text" list="emailid" class="form-control saerchbtn" placeholder="Email" id="email" name="email"/>
 						</div>
 						<div class="col-md-2">
-							<select class="form-control saerchbtn" id="vl_nm" name="vl_nm"></select>
+							<select class="form-control saerchbtn" id="vl_nm" name="vl_nm" ></select>
 						</div>
 						<div class="col-md-2"> </div>
 						<div class="col-md-2"> </div>
@@ -84,7 +84,7 @@ $(document).ready(function() {
 	schl_name();
 	ngo_name();
 	vol_name();
-	emailid();
+	//emailid();
 	$(".nav_registered_members").addClass('active_head');
 	$(".saerchbtn").keypress(function (e) { 
 		if(e.keyCode == 13){
@@ -116,6 +116,7 @@ $(document).ready(function() {
 });
 	
 	loadData(page,fields,ord_sort);
+	
 	function loadData(page,fields,ord_sort){
 		var sclnm = document.getElementById("sclnm").value;
 		var ng_nm = document.getElementById("ng_nm").value;

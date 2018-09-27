@@ -31,7 +31,7 @@
 						</div>
 						<div class="col-md-12" style="padding-top:0px;margin-bottom:10px;">
 							<div class="col-md-2">
-								<select class="form-control saerchbtn" id="ng_nm" name="ng_nm" onchange="loadData(1,0,0);"></select>
+							<select class="form-control saerchbtn" id="ng_nm" name="ng_nm" onchange="loadData(1,0,0);"></select>
 							</div>
 							<div class="col-md-2"><input type="text" class="form-control saerchbtn" placeholder="Mobile No" id="mno" name="mno"/></div>
 							<div class="col-md-2">
@@ -136,6 +136,7 @@ $(document).ready(function() {
 });
 
 	loadData(page,fields,ord_sort);
+	
 	function loadData(page,fields,ord_sort){
 		var ngnm = document.getElementById("ng_nm").value;
 		var mno = document.getElementById("mno").value;
@@ -166,7 +167,7 @@ function call_dash(id){
 	var site_usl = "<?php echo site_url_dash; ?>";
 	window.open(site_usl+'open_dash.php?id='+id+'&type=ngo');
 }
-
+ngo_name();
 function ngo_name(){
 	$.ajax({
 		type:"post",
