@@ -7,10 +7,4 @@ $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
 
 echo ".... ". $data . " .... ";
 echo $base64;
- //s ass
-//asd asd
-dasdbaskd comment by purvesh
-hiren donda 9974 hd
-
-testing by hiren
 ?>
